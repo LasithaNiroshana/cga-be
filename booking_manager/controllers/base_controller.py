@@ -24,9 +24,10 @@ class BaseController:
                             content={'status': 0, 'message': 'No records found.!'})
 
     @staticmethod
-    def success(result):
+    def success(result, message="success."):
+        # Allow passing a custom success message
         return JSONResponse(status_code=status.HTTP_200_OK,
-                            content={'status': 1, 'message': 'success.',
+                            content={'status': 1, 'message': message,
                                      'result': jsonable_encoder(result)})
 
     @staticmethod
