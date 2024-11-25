@@ -1,20 +1,19 @@
-from fastapi import FastAPI,APIRouter
+from fastapi import HTTPException
+
 from booking_manager.controllers.base_controller import BaseController
-from booking_manager.database.schemas.services_schema import ServiceSchema, AvailableTimeSchema
-from booking_manager.models.service_model import AvailableTimeModel
-from booking_manager.models.service_model import ServiceModel
 from booking_manager.services.services_service import ServicesService
-from booking_manager.database.schemas.services_schema import ServicesResponse
+from booking_manager.database.schemas.services_schema import ServiceSchema
 
-class ServicesController(BaseController):
-    def __init__(self, db):
-        self._services_service = ServicesService(db)
+class ServicesController:
 
-    def get_all_services(self):
+    @staticmethod
+    async def create_service(service:ServiceSchema):
         try:
-            services = self._services_service.get_all_services()
-            if not services:  # Check if services list is empty
-                return self.success([], "No services currently available.")
-            return self.success(services, "Services retrieved successfully.")
+            service_data = await ServicesService.create_service(service)
+
+            return BaseController.success(service_data,"Service created successfully.")
+
         except Exception as e:
-            return self.ise(e)
+            BaseController.ise(e)
+
+

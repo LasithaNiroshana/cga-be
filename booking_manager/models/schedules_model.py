@@ -1,8 +1,12 @@
 from bson import ObjectId
-from pydantic import BaseModel, Field, validator, field_validator
+from pydantic import BaseModel
+from datetime import time
+from typing import Optional
 from pydantic import GetCoreSchemaHandler
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
+from typing import List, Optional, Any, Dict
+from datetime import time
 
 class PyObjectId(ObjectId):
     @classmethod
@@ -25,24 +29,18 @@ class PyObjectId(ObjectId):
             raise ValueError(f"Invalid ObjectId: {value}")
         return ObjectId(value)
 
-
-class ServiceSchema(BaseModel):
-    # id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    name: str
-    service_type: int  # 0 = Fixed time slots, 1 = Variable time slots
-    description: str = ""
-    price: float
-    schedules: list = []
-
-    @field_validator("name")
-    def validate_name(cls, value: str) -> str:
-        if not value.strip():
-            raise ValueError("Service name cannot be empty or whitespace.")
-        return value
+class SchedulesModel(BaseModel):
+    id: Optional[str] = None  # Optional for auto-generation
+    service_id: PyObjectId  # Reference to the Service ID (ObjectId)
+    # day: int  # 0=Sunday, 1=Monday, ..., 6=Saturday
+    start_time: time
+    end_time: time
+    date: str  # The specific date for the schedule (ISO format)
 
     class Config:
-        json_encoders = {ObjectId: str}
-        populate_by_name = True
-        arbitrary_types_allowed = True
+        json_encoders = {
+            PyObjectId: str,  # Serialize PyObjectId to string
+        }
 
-
+    def to_dict(self):
+        return self.model_dump(by_alias=True)
