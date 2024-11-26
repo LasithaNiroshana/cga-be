@@ -25,6 +25,7 @@ class ServiceModel(BaseModel):
     description: Optional[str] = None  # Optional description of the service
     price:float
     schedules: List[SchedulesModel] = []
+    created_at:datetime
 
     class Config:
         json_encoders = {

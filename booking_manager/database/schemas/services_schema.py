@@ -32,7 +32,7 @@ class ServiceSchema(BaseModel):
     service_type: int  # 0 = Fixed time slots, 1 = Variable time slots
     description: str = ""
     price: float
-    schedules: list = []
+    # schedules: list = []
 
     @field_validator("name")
     def validate_name(cls, value: str) -> str:
