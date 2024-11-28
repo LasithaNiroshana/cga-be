@@ -19,5 +19,16 @@ class SchedulesController:
             # Handle any exceptions using BaseController
             return BaseController.ise(e)
 
-    # You can add more methods for schedule-related actions like update, delete, etc.
+    @staticmethod
+    async def get_schedules_by_id(service_id:str):
+        """Handle getting schedules by id"""
+        try:
+            schedules_list = await SchedulesService.get_schedule_by_service_id(service_id)
+            if not schedules_list:
+                return BaseController.not_found()
+
+            return BaseController.success(schedules_list, "Schedule overrides retrieved successfully.")
+
+        except Exception as e:
+            return BaseController.ise(e)
 

@@ -1,11 +1,16 @@
 from sys import exception
-from pymongo import DESCENDING
+from pymongo import DESCENDING, ReturnDocument
 from pymongo.errors import PyMongoError
+
+from booking_manager.controllers.base_controller import BaseController
 from booking_manager.models.service_model import ServiceModel
 from booking_manager.database.db import get_database,db
 from booking_manager.database.schemas.services_schema import ServiceSchema
 from bson import ObjectId
 from datetime import datetime
+
+from booking_manager.services.schedules_service import SchedulesService
+
 
 class ServicesService:
 
@@ -13,7 +18,6 @@ class ServicesService:
     async def create_service(service_schema: ServiceSchema) -> dict:
         """Create a new service"""
         try:
-            # Convert the Pydantic model to a dictionary
             service_dict = service_schema.model_dump(exclude_unset=True, by_alias=True)
 
             if 'schedules' not in service_dict:
@@ -59,6 +63,11 @@ class ServicesService:
             raise Exception(f"An unexpected error occurred: {str(e)}")
 
     @staticmethod
+    async def get_service_by_id(service_id: ObjectId):
+        services_collection = get_database()["services"]
+        return await services_collection.find_one({"_id": service_id})
+
+    @staticmethod
     async def delete_service(service_id:str)->dict:
         """Delete a service"""
         try:
@@ -83,25 +92,44 @@ class ServicesService:
             raise Exception(f"An error occurred while deleting the service: {str(e)}")
 
 
-    # @staticmethod
-    # async def edit_service(service_id:str,updated_service:ServiceSchema):
-    #     """Edit a  service"""
-    #     try:
-    #         object_id=ObjectId(service_id)
-    #         updated_data=updated_service.model_dump(exclude_none=True)
-    #         updated_data["updated_at"] = datetime.now()
-    #
-    #         service_collection = get_database()["services"]
-    #         updated_result=service_collection.update_one( {"_id": object_id}, {"$set": updated_data})
-    #
-    #         if updated_result.matched_count == 0:
-    #             raise ValueError (f"No service found with id:{service_id}")
-    #
-    #         updated_service_data = service_collection.find_one({"_id":object_id})
-    #         return updated_service_data
-    #
-    #     except Exception as e:
-    #         raise Exception(f"An error occurred while updating the service:{e}")
+    @staticmethod
+    async def edit_service(service_id:ObjectId,updated_service:ServiceSchema):
+        """Edit a  service"""
+        try:
+
+            updated_data=updated_service.model_dump(exclude_none=True)
+            updated_data["updated_at"] = datetime.now()
+
+            service_collection = get_database()["services"]
+            updated_service=service_collection.find_one_and_update( {"_id": service_id},
+                                                        {"$set": updated_data},
+                                                        return_document=ReturnDocument.AFTER)
+
+            # if updated_result.modified_count == 0:
+            #     return None
+                # raise ValueError (f"No service found with id:{service_id}")
+
+            # updated_service_data = service_collection.find_one({"_id":service_id})
+            return updated_service
+
+        except Exception as e:
+            return BaseController.ise(e)
+
+    @staticmethod
+    async def get_service_availability() -> list:
+        try:
+            services_collection=get_database()["services"]
+            service_data = list(services_collection)
+
+            for service in service_data:
+                print(service)
+            return services_collection
+            # schedule_data = SchedulesService.get_schedule_by_service_id()
+
+        except Exception as e:
+            return BaseController.ise(e)
+
+
 
 
 
