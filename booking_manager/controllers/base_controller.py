@@ -34,7 +34,7 @@ class BaseController:
     def bad_request(message: str = None):
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST,
                             content={'status': 0,
-                                     'message': 'An error occurred, please contact the administration.!'})
+                                     'message': 'An error occurred, Bad request.!'})
 
     @staticmethod
     def unauthorized_request(message: str = None):

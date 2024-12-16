@@ -32,3 +32,15 @@ class SchedulesController:
         except Exception as e:
             return BaseController.ise(e)
 
+    @staticmethod
+    async def get_available_schedules(service_id:str):
+        try:
+            available_schedules = await SchedulesService.get_available_schedules(service_id)
+            if not available_schedules:
+                return BaseController.not_found()
+
+            return BaseController.success(available_schedules, "Available schedules retrieved successfully.")
+
+        except Exception as e:
+            return BaseController.ise(e)
+

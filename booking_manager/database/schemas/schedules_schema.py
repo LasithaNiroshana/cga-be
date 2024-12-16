@@ -1,12 +1,16 @@
 from pydantic import BaseModel, Field, field_validator, model_validator
-from datetime import datetime
+from datetime import datetime, date
 from bson import ObjectId
-from typing import Optional
+from typing import Optional, List
 
 class SchedulesSchema(BaseModel):
-    id: Optional[str] = Field(default_factory=lambda: str(ObjectId()))
+    # id: Optional[str] = Field(default_factory=lambda: str(ObjectId()))
     service_id: str
     day: int  # 0=Sunday, 1=Monday, ..., 6=Saturday
+    minimum_slot:int
+    # available_slots: List[str]  # List of time slots, e.g., ["10:00-11:00", "11:00-12:00"]
+    available_slots: Optional[List[str]] = Field(default=None, exclude=True)
+    booked_slots: Optional[List[str]] = []
     start_time: str  # Format as HH:MM
     end_time: str  # Format as HH:MM
     date: datetime  # A full datetime object, if needed
@@ -31,6 +35,7 @@ class SchedulesSchema(BaseModel):
     class Config:
         json_encoders = {
             ObjectId: str,  # Ensure ObjectId is converted to string in JSON
+            date: lambda v: v.isoformat(),
             datetime: lambda v: v.isoformat(),  # Convert datetime to ISO format
         }
 

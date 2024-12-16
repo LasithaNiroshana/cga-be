@@ -115,21 +115,6 @@ class ServicesService:
         except Exception as e:
             return BaseController.ise(e)
 
-    @staticmethod
-    async def get_service_availability() -> list:
-        try:
-            services_collection=get_database()["services"]
-            service_data = list(services_collection)
-
-            for service in service_data:
-                print(service)
-            return services_collection
-            # schedule_data = SchedulesService.get_schedule_by_service_id()
-
-        except Exception as e:
-            return BaseController.ise(e)
-
-
 
 
 

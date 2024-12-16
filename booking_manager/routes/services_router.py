@@ -79,3 +79,7 @@ async def get_schedule_overrides_by_service_id(service_id:str):
 async def get_schedules_by_service_id(service_id:str):
     return await SchedulesService.get_schedule_by_service_id(service_id)
 
+@services_router.get("/get_available_schedules{service_id}", summary="Get available schedules")
+async def get_available_schedules(service_id:str):
+    return await SchedulesService.get_available_schedules(service_id)
+
