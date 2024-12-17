@@ -166,50 +166,72 @@ class SchedulesService:
     #         raise Exception(f"Error retrieving schedule overrides for service ID {service_id}: {str(e)}")
 
     @staticmethod
-    async def get_available_schedules(service_id:str):
+    async def get_available_schedules(service_id: str):
         try:
+            # Fetch schedules and overrides
             schedules = await SchedulesService.get_schedule_by_service_id(service_id)
             overrides = await ScheduleOverrideService.get_schedule_override_by_service_id(service_id)
 
-            if not schedules:
-                return BaseController.not_found()
-
+            # Initialize valid schedules list
             valid_schedules = []
-            print("Line 2")
 
-            for schedule in valid_schedules:
-                print("line 3")
+            # Get today's date
+            today = datetime.now().date()
+
+            # Process each schedule
+            for schedule in schedules:
+                # Convert schedule["date"] to a datetime.date object
+                if isinstance(schedule["date"], str):
+                    try:
+                        schedule_date = datetime.strptime(schedule["date"], "%Y-%m-%d").date()
+                    except ValueError:
+                        continue
+
+                elif isinstance(schedule["date"], datetime):
+                    schedule_date = schedule["date"].date()
+                else:
+                    continue
+
+                if schedule_date <= today:
+                    continue
+
                 has_override = False
 
                 for override in overrides:
-                    if (
-                        override["date"].date() == schedule["date"].date()
-                        and override["full_day"]
-                        and override["is_included"]
-                    ):
-                        # Add schedules with full_day=true and is_included=true
-                        valid_schedules.append(schedule)
-                        has_override = True
-                        break
-                    elif (
-                        override["date"].date() == schedule["date"].date()
-                        and not override["full_day"]
-                        and override["is_included"]
-                    ):
-                        # Modify schedule for overrides with full_day=false
-                        schedule["start_time"] = override["start_time"]
-                        schedule["end_time"] = override["end_time"]
-                        valid_schedules.append(schedule)
-                        has_override = True
-                        break
+
+                    if isinstance(override["date"], str):
+                        try:
+                            override_date = datetime.strptime(override["date"], "%Y-%m-%d").date()
+                        except ValueError:
+                            continue
+                    elif isinstance(override["date"], datetime):
+                        override_date = override["date"].date()
+                    else:
+                        continue
+
+                    if override_date == schedule_date:
+                        if override["full_day"] and override["is_included"]:
+                            valid_schedules.append(schedule)
+                            has_override = True
+                            break
+                        elif not override["full_day"] and override["is_included"]:
+                            schedule["start_time"] = override["start_time"]
+                            schedule["end_time"] = override["end_time"]
+                            valid_schedules.append(schedule)
+                            has_override = True
+                            break
 
                 if not has_override:
-                    return BaseController.not_found().body
+                    valid_schedules.append(schedule)
 
-            return BaseController.success(valid_schedules)
+            if not valid_schedules:
+                return BaseController.not_found()
+
+            return BaseController.success(valid_schedules, "Available schedules retrieved successfully.")
 
         except Exception as e:
             return BaseController.ise(e)
+
 
 
 

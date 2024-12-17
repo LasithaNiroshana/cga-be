@@ -33,16 +33,16 @@ class ScheduleOverrideSchema(BaseModel):
             raise ValueError("Invalid service_id format")
         return values
 
-    @field_serializer("date")
-    def serialize_date(self, value: date) -> datetime:
-        """
-        Convert date to datetime for MongoDB storage.
-        """
-        return datetime.combine(value, datetime.min.time())
+    # @field_serializer("date")
+    # def serialize_date(self, value: date) -> datetime:
+    #     """
+    #     Convert date to datetime for MongoDB storage.
+    #     """
+    #     return datetime.combine(value, datetime.min.time())
 
     class Config:
         json_encoders = {
             ObjectId: str,  # Ensure ObjectId is converted to string in JSON
-            datetime: lambda v: v.isoformat(),  # Convert datetime to ISO format
+            # datetime: lambda v: v.isoformat(),  # Convert datetime to ISO format
         }
         populate_by_name = True
